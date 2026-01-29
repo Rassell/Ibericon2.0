@@ -28,6 +28,11 @@ def createApp(app):
     app.config['HOST'] = config['host']
     app.config['DEBUG'] = config['debug']
 
+    # Configuración de cookies de sesión (Flask-Login)
+    app.config["SESSION_COOKIE_SECURE"] = False  # False para desarrollo en localhost
+    app.config["SESSION_COOKIE_HTTPONLY"] = True  # Previene acceso desde JavaScript
+    app.config["SESSION_COOKIE_SAMESITE"] = "None"  # Permite cross-domain
+
     app.config["JWT_SECRET_KEY"] = handleSecretKey(config)
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     app.config["JWT_COOKIE_SECURE"] = True  # Requiere HTTPS
