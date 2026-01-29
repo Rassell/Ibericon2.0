@@ -15,7 +15,7 @@ future==0.18.3
 geocoder==1.38.1
 greenlet==2.0.2
 gunicorn==21.2.0
-libsql-experimental==0.10.1
+libsql-experimental==0.0.55
 idna==3.4
 importlib-resources==6.0.1
 itsdangerous==2.1.2
