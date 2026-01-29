@@ -78,16 +78,18 @@ def getUserByBcpId(user):
 
 
 def getUsers(qty=0):
+    from sqlalchemy.orm import make_transient
     if qty > 0:
         result = User.query.filter(User.bcpId != "0000000000").order_by(desc(User.ibericonScore)).all()
         return result[0:qty-1]
     else:
         us = User.query.filter(User.bcpId != "0000000000").order_by(desc(User.ibericonScore)).all()
+        conferences = {c.id: c.name for c in Conference.query.all()}
         for i, u in enumerate(us):
-            for c in Conference.query.all():
-                if u.conference == c.id:
-                    us[i].conference = c.name
-                    break
+            if u.conference in conferences:
+                # Detach from session to prevent autoflush
+                make_transient(u)
+                us[i].conference = conferences[u.conference]
         return us
 
 
