@@ -42,6 +42,14 @@ def createApp(app):
 
     app.config["SQLALCHEMY_DATABASE_URI"] = config['db-uri']
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    
+    # Pool configuration for multi-threaded environment
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,  # Verify connections before using them
+        "pool_recycle": 300,     # Recycle connections after 5 minutes
+        "pool_size": 10,         # Maximum number of connections to keep open
+        "max_overflow": 20,      # Maximum overflow connections
+    }
 
     app.config["IMAGE_BB_KEY"] = config['image-bb-key']
     app.config["IMAGE_BB_UPLOAD"] = config['image-bb-upload']

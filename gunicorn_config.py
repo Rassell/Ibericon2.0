@@ -9,8 +9,8 @@ timeout = 300
 workers = 2
 
 # Threads: número de threads por worker
-# Útil para I/O bound operations (llamadas a APIs externas)
-threads = 4
+# Reducido a 2 para evitar problemas de SSL con PostgreSQL
+threads = 2
 
 # Worker class: usar threads para mejor manejo de I/O
 worker_class = 'gthread'
