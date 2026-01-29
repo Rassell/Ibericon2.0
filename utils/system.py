@@ -7,12 +7,6 @@ from werkzeug.security import generate_password_hash
 from database import db, User, Conference, City
 from api import bpApiAdmin, bpApiAuth
 
-# Importar sqlalchemy_libsql para registrar el dialecto con SQLAlchemy
-try:
-    import sqlalchemy_libsql
-except ImportError:
-    pass
-
 
 def createApp(app):
     # Intentar leer config.json desde /etc/secrets/ primero, luego desde secret/
@@ -119,6 +113,11 @@ def createTables(database):
 
 
 def createAdmin(app):
+    # Verificar si el admin ya existe
+    existing_admin = User.query.filter_by(bcpMail=app.config["ADMIN_MAIL"]).first()
+    if existing_admin:
+        return
+    
     new_user = User(
         bcpId="0000000000",
         bcpMail=app.config["ADMIN_MAIL"],
@@ -135,6 +134,11 @@ def createAdmin(app):
 
 
 def createCollaborator(app):
+    # Verificar si el collaborator ya existe
+    existing_collab = User.query.filter_by(bcpMail=app.config["COLLAB_MAIL"]).first()
+    if existing_collab:
+        return
+    
     new_user = User(
         bcpId="0000000000",
         bcpMail=app.config["COLLAB_MAIL"],
@@ -150,6 +154,10 @@ def createCollaborator(app):
 
 
 def createRegions(app):
+    # Verificar si ya existen conferencias
+    if Conference.query.count() > 0:
+        return
+    
     for key, value in app.config['CONFERENCES'].items():
         new_conference = Conference(name=key)
         app.config['database'].session.add(new_conference)
