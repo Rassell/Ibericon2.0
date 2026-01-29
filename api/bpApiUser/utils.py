@@ -10,7 +10,7 @@ def getUsers(query, qty=0):
     result = (current_app.config['database'].session.query(User, City)
               .order_by(desc(User.ibericonScore))
               .filter(User.bcpId != "0000000000")
-              .filter(User.conference == conference.id if conference else User.conference)
+              .filter(User.conference == conference.id if conference else User.conference != None)
               .join(City, City.id == User.city)
               .all())
     return jsonify({
