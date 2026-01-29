@@ -7,6 +7,12 @@ from werkzeug.security import generate_password_hash
 from database import db, User, Conference, City
 from api import bpApiAdmin, bpApiAuth
 
+# Importar libsql para registrar el dialecto con SQLAlchemy
+try:
+    import libsql_experimental
+except ImportError:
+    pass
+
 
 def createApp(app):
     # Intentar leer config.json desde /etc/secrets/ primero, luego desde secret/
