@@ -9,71 +9,19 @@ from api import bpApiAdmin, bpApiAuth
 
 
 def createApp(app):
-    with open("secret/config.json") as conf:
-        config = json.load(conf)
-        conf.close()
+    # Intentar leer config.json desde /etc/secrets/ primero, luego desde secret/
+    config_paths = ["/etc/secrets/config.json", "secret/config.json"]
+    config = None
     
-    # Sobrescribir con variables de entorno si están definidas
-    env_mappings = {
-        'SECRET_KEY': 'secret-key',
-        'DB_URI': 'db-uri',
-        'PORT': 'port',
-        'HOST': 'host',
-        'DEBUG': 'debug',
-        'IMAGE_BB_KEY': 'image-bb-key',
-        'IMAGE_BB_UPLOAD': 'image-bb-upload',
-        'IMAGE_DEFAULT': 'image-default',
-        'API_USER_URI': 'api-user-uri',
-        'API_USER_DETAIL': 'api-user-detail',
-        'API_USER_IMG': 'api-user-img',
-        'API_USERS_URI': 'api-users-uri',
-        'API_TEAM_URI': 'api-team-uri',
-        'API_TEAM_PLACINGS_URI': 'api-team-placings-uri',
-        'API_TEAMS_DETAIL': 'api-teams-detail',
-        'API_EVENT_URI': 'api-event-uri',
-        'API_EVENT_URI_NEW': 'api-event-uri-new',
-        'API_EVENT_SEARCH': 'api-event-search',
-        'API_EVENT_CHECK': 'api-event-check',
-        'ADMIN_USERNAME': 'admin-name',
-        'ADMIN_PASSWORD': 'admin-password',
-        'ADMIN_MAIL': 'admin-mail',
-        'COLLABORATOR_USERNAME': 'collab-name',
-        'COLLABORATOR_PASSWORD': 'collab-password',
-        'COLLABORATOR_MAIL': 'collab-mail',
-        'JWT_SECRET_KEY': 'secret-key',
-        'MONEY': 'money',
-        'PERCENTAGE': 'percentage'
-    }
+    for config_path in config_paths:
+        if os.path.exists(config_path):
+            with open(config_path) as conf:
+                config = json.load(conf)
+                conf.close()
+            break
     
-    for env_var, config_key in env_mappings.items():
-        env_value = os.getenv(env_var)
-        if env_value is not None:
-            # Convertir a booleano si es necesario
-            if config_key == 'debug':
-                config[config_key] = env_value.lower() in ('true', '1', 'yes')
-            # Convertir a entero si es necesario
-            elif config_key in ['port', 'money', 'percentage']:
-                try:
-                    config[config_key] = int(env_value)
-                except ValueError:
-                    config[config_key] = env_value
-            else:
-                config[config_key] = env_value
-    
-    # Parsear variables JSON complejas
-    api_headers = os.getenv('API_HEADERS')
-    if api_headers:
-        try:
-            config['api-headers'] = json.loads(api_headers)
-        except json.JSONDecodeError:
-            pass  # Mantener el valor del config.json si hay error
-    
-    conferences = os.getenv('CONFERENCES')
-    if conferences:
-        try:
-            config['conferences'] = json.loads(conferences)
-        except json.JSONDecodeError:
-            pass  # Mantener el valor del config.json si hay error
+    if config is None:
+        raise FileNotFoundError("No se encontró config.json en /etc/secrets/ ni en secret/")
     
     app.config["SECRET_KEY"] = handleSecretKey(config)
     app.config['PORT'] = config['port']
