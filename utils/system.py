@@ -12,6 +12,43 @@ def createApp(app):
     with open("secret/config.json") as conf:
         config = json.load(conf)
         conf.close()
+    
+    # Sobrescribir con variables de entorno si están definidas
+    env_mappings = {
+        'SECRET_KEY': 'secret-key',
+        'DB_URI': 'db-uri',
+        'PORT': 'port',
+        'HOST': 'host',
+        'DEBUG': 'debug',
+        'IMAGE_BB_KEY': 'image-bb-key',
+        'IMAGE_BB_UPLOAD': 'image-bb-upload',
+        'IMAGE_DEFAULT': 'image-default',
+        'ADMIN_USERNAME': 'admin-name',
+        'ADMIN_PASSWORD': 'admin-password',
+        'ADMIN_MAIL': 'admin-mail',
+        'COLLABORATOR_USERNAME': 'collab-name',
+        'COLLABORATOR_PASSWORD': 'collab-password',
+        'COLLABORATOR_MAIL': 'collab-mail',
+        'JWT_SECRET_KEY': 'secret-key',
+        'MONEY': 'money',
+        'PERCENTAGE': 'percentage'
+    }
+    
+    for env_var, config_key in env_mappings.items():
+        env_value = os.getenv(env_var)
+        if env_value is not None:
+            # Convertir a booleano si es necesario
+            if config_key == 'debug':
+                config[config_key] = env_value.lower() in ('true', '1', 'yes')
+            # Convertir a entero si es necesario
+            elif config_key in ['port', 'money', 'percentage']:
+                try:
+                    config[config_key] = int(env_value)
+                except ValueError:
+                    config[config_key] = env_value
+            else:
+                config[config_key] = env_value
+    
     app.config["SECRET_KEY"] = handleSecretKey(config)
     app.config['PORT'] = config['port']
     app.config['HOST'] = config['host']
