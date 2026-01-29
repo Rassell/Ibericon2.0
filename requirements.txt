@@ -27,7 +27,7 @@ mdurl==0.1.2
 ordered-set==4.1.0
 packaging==23.1
 password-strength==0.0.3.post2
-pydantic==1.10.12
+pydantic==1.10.18
 Pygments==2.16.1
 PyJWT==2.8.0
 ratelim==0.1.6
