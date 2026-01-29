@@ -168,6 +168,9 @@ def manageUsers(tor, users):
     totalUsers = len(users['data'])
     for user in users['data']:
         usr = addUserFromTournament(user, tor)
+        if not usr:
+            # Skip this user if we couldn't add them
+            continue
         fct = addFactionFromTournament(user)
         cl = addClubFromTournament(user, tor)
         tor.users.append(usr)
@@ -197,8 +200,14 @@ def manageUsers(tor, users):
 
 
 def addUserFromTournament(usr, tor):
-    if not User.query.filter_by(bcpId=usr['userId']).first():
-        uri = current_app.config["BCP_API_USER_DETAIL"].replace("####userId####", usr['userId'])
+    # Get userId - handle different API response structures
+    user_id = usr.get('userId') or usr.get('id')
+    if not user_id:
+        print(f"⚠️ Warning: User object missing userId/id: {usr.keys()}")
+        return None
+    
+    if not User.query.filter_by(bcpId=user_id).first():
+        uri = current_app.config["BCP_API_USER_DETAIL"].replace("####userId####", user_id)
         response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
         users = json.loads(response.text)
         imgUrl = current_app.config["IMAGE_DEFAULT"]
@@ -207,9 +216,18 @@ def addUserFromTournament(usr, tor):
             response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
             img = json.loads(response.text)
             imgUrl = img['url']
+        
+        # Handle user name - could be nested or flat structure
+        if 'user' in usr and usr['user']:
+            first_name = usr['user'].get('firstName', '').strip()
+            last_name = usr['user'].get('lastName', '').strip()
+        else:
+            first_name = usr.get('firstName', '').strip()
+            last_name = usr.get('lastName', '').strip()
+        
         current_app.config['database'].session.add(User(
-            bcpId=usr['userId'],
-            bcpName=usr['user']['firstName'].strip() + " " + usr['user']['lastName'].strip(),
+            bcpId=user_id,
+            bcpName=f"{first_name} {last_name}",
             conference=tor.conference,
             profilePic=imgUrl,
             city=tor.city,
@@ -217,7 +235,7 @@ def addUserFromTournament(usr, tor):
             registered=False
         ))
         current_app.config['database'].session.commit()
-    return User.query.filter_by(bcpId=usr['userId']).first()
+    return User.query.filter_by(bcpId=user_id).first()
 
 
 def addFactionFromTournament(fct):
@@ -386,8 +404,15 @@ def updateAlgorithm():
             totalUsers = len(info['data'])
             for user in info['data']:
                 try:
-                    usr = User.query.filter_by(bcpId=user['userId']).first()
+                    user_id = user.get('userId') or user.get('id')
+                    if not user_id:
+                        continue
+                    usr = User.query.filter_by(bcpId=user_id).first()
+                    if not usr:
+                        continue
                     usrTor = UserTournament.query.filter_by(userId=usr.id).filter_by(tournamentId=tor.id).first()
+                    if not usrTor:
+                        continue
                     usrTor.position = user['placing']
                     usrTor.performance = json.dumps(user['total_games'])
                     usrTor.ibericonScore = algorithm(user, totalUsers)
