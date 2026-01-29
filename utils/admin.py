@@ -12,7 +12,7 @@ from utils.user import updateUserRegionByMostPlayedTournaments
 def checkTournaments():
     for t in Tournament.query.filter_by(isFinished=False).all():
         uri = current_app.config["BCP_API_EVENT_CHECK"].replace("####eventId####", t.bcpId)
-        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
         info = json.loads(response.text)
         if info['ended']:
             tor = Tournament.query.filter_by(bcpId=info['id']).first()
@@ -29,7 +29,7 @@ def getFutureTournaments():
 
     uri = current_app.config["BCP_API_EVENT_SEARCH"].replace("####startDate####", now)
     uri = uri.replace("####endDate####", one_year_later_formatted)
-    response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+    response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
     info = json.loads(response.text)
 
     for t in info['data']:
@@ -109,7 +109,7 @@ def newTournament(tor):
         uri = current_app.config["BCP_API_EVENT_NEW"].replace("####event####", tor['id'])
     else:
         uri = current_app.config["BCP_API_EVENT_NEW"].replace("####event####", tor['id'])
-    response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+    response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
     users = json.loads(response.text)
     tor = manageTournament(tor)
     if tor:
@@ -163,7 +163,7 @@ def manageTournament(info):
 def manageUsers(tor, users):
     if tor.isFinished:
         uri = current_app.config["BCP_API_USERS"].replace("####event####", tor.bcpId)
-        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
         users = json.loads(response.text)
     totalUsers = len(users['data'])
     for user in users['data']:
@@ -208,12 +208,12 @@ def addUserFromTournament(usr, tor):
     
     if not User.query.filter_by(bcpId=user_id).first():
         uri = current_app.config["BCP_API_USER_DETAIL"].replace("####userId####", user_id)
-        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
         users = json.loads(response.text)
         imgUrl = current_app.config["IMAGE_DEFAULT"]
         if 'profileFileId' in users.keys():
             uri = current_app.config["BCP_API_USER_IMG"].replace("####img####", users['profileFileId'])
-            response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+            response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
             img = json.loads(response.text)
             imgUrl = img['url']
         
@@ -253,12 +253,12 @@ def addFactionFromTournament(fct):
 def addClubFromTournament(te, tor):
     if te['team']:
         uri = current_app.config["BCP_API_TEAMS_DETAIL"].replace("####teamId####", te['teamId'])
-        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+        response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
         team = json.loads(response.text)
         imgUrl = current_app.config["IMAGE_DEFAULT"]
         if 'profileFileId' in team.keys():
             uri = current_app.config["BCP_API_USER_IMG"].replace("####img####", team['profileFileId'])
-            response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+            response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
             img = json.loads(response.text)
             imgUrl = img['url']
             res = requests.get(imgUrl, stream=True)
@@ -399,7 +399,7 @@ def updateAlgorithm():
     for tor in Tournament.query.all():
         if tor.isFinished:
             uri = current_app.config["BCP_API_USERS"].replace("####event####", tor.bcpId)
-            response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"])
+            response = requests.get(uri, headers=current_app.config["BCP_API_HEADERS"], verify=False)
             info = json.loads(response.text)
             totalUsers = len(info['data'])
             for user in info['data']:
