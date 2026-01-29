@@ -23,6 +23,17 @@ def createApp(app):
         'IMAGE_BB_KEY': 'image-bb-key',
         'IMAGE_BB_UPLOAD': 'image-bb-upload',
         'IMAGE_DEFAULT': 'image-default',
+        'API_USER_URI': 'api-user-uri',
+        'API_USER_DETAIL': 'api-user-detail',
+        'API_USER_IMG': 'api-user-img',
+        'API_USERS_URI': 'api-users-uri',
+        'API_TEAM_URI': 'api-team-uri',
+        'API_TEAM_PLACINGS_URI': 'api-team-placings-uri',
+        'API_TEAMS_DETAIL': 'api-teams-detail',
+        'API_EVENT_URI': 'api-event-uri',
+        'API_EVENT_URI_NEW': 'api-event-uri-new',
+        'API_EVENT_SEARCH': 'api-event-search',
+        'API_EVENT_CHECK': 'api-event-check',
         'ADMIN_USERNAME': 'admin-name',
         'ADMIN_PASSWORD': 'admin-password',
         'ADMIN_MAIL': 'admin-mail',
@@ -48,6 +59,21 @@ def createApp(app):
                     config[config_key] = env_value
             else:
                 config[config_key] = env_value
+    
+    # Parsear variables JSON complejas
+    api_headers = os.getenv('API_HEADERS')
+    if api_headers:
+        try:
+            config['api-headers'] = json.loads(api_headers)
+        except json.JSONDecodeError:
+            pass  # Mantener el valor del config.json si hay error
+    
+    conferences = os.getenv('CONFERENCES')
+    if conferences:
+        try:
+            config['conferences'] = json.loads(conferences)
+        except json.JSONDecodeError:
+            pass  # Mantener el valor del config.json si hay error
     
     app.config["SECRET_KEY"] = handleSecretKey(config)
     app.config['PORT'] = config['port']

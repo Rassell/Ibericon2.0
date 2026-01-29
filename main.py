@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 from flask import redirect, url_for, render_template, request, make_response, flash
 from flask_openapi3 import Info
