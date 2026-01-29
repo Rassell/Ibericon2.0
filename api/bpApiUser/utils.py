@@ -54,7 +54,7 @@ def getUser(query):
                     .join(Tournament, Tournament.id == UserTournament.tournamentId)
                     .join(City, City.id == Tournament.city)
                     .join(Faction, Faction.id == UserTournament.factionId)
-                    .join(Club, Club.id == UserTournament.clubId)
+                    .outerjoin(Club, Club.id == UserTournament.clubId)
                     .filter(UserTournament.userId == userBd.User.id)
                     .order_by(desc(UserTournament.ibericonScore))
                     .all())
