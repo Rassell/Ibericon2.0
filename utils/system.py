@@ -35,7 +35,7 @@ def createApp(app):
 
     app.config["JWT_SECRET_KEY"] = handleSecretKey(config)
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-    app.config["JWT_COOKIE_SECURE"] = True  # Requiere HTTPS
+    app.config["JWT_COOKIE_SECURE"] = False  # False para desarrollo en localhost   
     app.config["JWT_COOKIE_HTTPONLY"] = True  # Previene acceso desde JavaScript
     app.config["JWT_COOKIE_SAMESITE"] = "None"  # Permite cross-domain
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False  # Desactiva CSRF protection si usas SameSite=None
