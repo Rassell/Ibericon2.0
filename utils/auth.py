@@ -3,7 +3,7 @@ import json
 
 from datetime import timedelta
 
-from flask import redirect, url_for, flash, current_app, jsonify
+from flask import current_app, jsonify
 from flask_login import login_user, logout_user
 from flask_jwt_extended import set_access_cookies, create_access_token, unset_jwt_cookies
 
@@ -30,7 +30,6 @@ def userSignup(form):
                 user.city = city.id
                 current_app.config['database'].session.commit()
                 # Create a response with user information and set cookies
-                response = redirect(url_for('dashboard'))
                 responseApi = jsonify({
                     "status": 200,
                     "message": "Registration successful",
@@ -42,9 +41,8 @@ def userSignup(form):
                         "city": city.name
                     }
                 })
-                return setUserInfo(response, user), setUserInfo(responseApi, user)
-            flash("User already registered")
-            return redirect(url_for('signup')), jsonify({
+                return setUserInfo(responseApi, user)
+            return jsonify({
                 "status": 401,
                 "message": "User already registered",
                 "data": {}
@@ -73,7 +71,6 @@ def userSignup(form):
         current_app.config['database'].session.add(new_user)
         current_app.config['database'].session.commit()
         # Create a response with user information and set cookies
-        response = redirect(url_for('dashboard'))
         responseApi = jsonify({
             "status": 200,
             "message": "Registration successful",
@@ -85,9 +82,8 @@ def userSignup(form):
                 "city": city.name
             }
         })
-        return setUserInfo(response, new_user), setUserInfo(responseApi, new_user)
-    flash("Your BCP credentials are incorrect")
-    return redirect(url_for('signup')), jsonify({
+        return setUserInfo(responseApi, new_user)
+    return jsonify({
         "status": 401,
         "message": "Your BCP credentials are incorrect",
         "data": {}
@@ -117,8 +113,6 @@ def userLogin(form):
         if check_password_hash(user.password, form['password']):
             city = City.query.filter_by(id=user.city).first()
             # Create a response with user information and set cookies
-            flash("OK", 'info')
-            response = redirect(url_for('dashboard'))
             responseApi = jsonify({
                 "status": 200,
                 "message": "Login successful",
@@ -130,11 +124,10 @@ def userLogin(form):
                     "city": city.name if city else None
                 }
             })
-            return setUserInfo(response, user), setUserInfo(responseApi, user)
+            return setUserInfo(responseApi, user)
     else:
         userSignup(form)
-    flash("Could not verify, singing up...", 'error')
-    return redirect(url_for('login')), jsonify({
+    return jsonify({
         "status": 401,
         "message": "Could not verify",
         "data": {}
@@ -148,16 +141,14 @@ def setUserInfo(response, user):
 
 
 def resetUserInfo():
-    response = redirect(url_for('dashboard'))
     responseApi = jsonify({
         "status": 200,
         "message": "Logout successful",
         "data": {}
     })
     logout_user()
-    unset_jwt_cookies(response)
     unset_jwt_cookies(responseApi)
-    return response, responseApi
+    return responseApi
 
 
 def getUserOnly(pl):
